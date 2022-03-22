@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+  registry:
+    image: registry:2.4.1
+    restart: always
+    container_name: registry
+    ports:
+      - '5000:5000'
+    environment:
+      - REGISTRY_LOG_LEVEL=info
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+    volumes:
+      - ./data:/var/lib/registry
+    networks:
+      dclan:
+        ipv4_address: 10.5.0.2
+  registry-ui:
+    image: jc21/registry-ui
+    container_name: registry-ui
+    depends_on:
+      - registry
+    ports:
+      - '8888:80'
+    environment:
+      - REGISTRY_HOST=10.5.0.2:5000
+      - REGISTRY_SSL=false
+      - REGISTRY_DOMAIN=localhost:5000
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+      - REGISTRY_USER=
+      - REGISTRY_PASS=
+    networks:
+      dclan:
+        ipv4_address: 10.5.0.3
+networks:
+  dclan:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/24
+          gateway: 10.5.0.1
